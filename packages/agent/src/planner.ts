@@ -80,7 +80,7 @@ export async function planTurn(o: {
     `Their other features: ${o.otherFeatures.length ? o.otherFeatures.map((c) => `"${c}"`).join(', ') : 'none'}`,
   ].join('\n');
   const transcript = o.conversation.map((t) => `${t.role === 'user' ? 'Admin' : 'You'}: ${t.text}`).join('\n');
-  await generateText({
+  const r = await generateText({
     model: o.model,
     instructions: INSTRUCTIONS,
     prompt: `${context}\n\nConversation so far:\n${transcript}\n\nRespond to the admin's last message by calling reply or propose.`,
@@ -88,5 +88,9 @@ export async function planTurn(o: {
     stopWhen: [isStepCount(3), hasToolCall('reply'), hasToolCall('propose')],
     ...(o.abortSignal ? { abortSignal: o.abortSignal } : {}),
   });
-  return result ?? { kind: 'reply', text: "Sorry, I didn't catch that. What would you like to change?" };
+  if (result) return result;
+  // Models sometimes answer in plain text instead of calling `reply` (and forced tool choice isn't available on
+  // every model). That text is the reply.
+  const text = r.text.trim();
+  return { kind: 'reply', text: text || "Sorry, I didn't catch that. What would you like to change?" };
 }

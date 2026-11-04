@@ -186,6 +186,14 @@ describe('features', () => {
     expect((await settle(id)).feature.status).toBe('preview');
   });
 
+  test('a planner answer without a tool call is used as the reply', async () => {
+    const { queue, create } = await setup();
+    // A model that answers in plain text and never calls reply/propose.
+    queue.push(scriptedModel('planner', []));
+    const { d } = await create('did you make the changes?');
+    expect(d.messages.at(-1)).toMatchObject({ role: 'assistant', kind: 'text', text: 'done' });
+  });
+
   test('planner replies and model errors show up in the feature chat', async () => {
     const { queue, say, create } = await setup();
     queue.push(scriptedModel('planner', [{ tool: 'reply', input: { text: 'Which table do you mean?' } }]));
