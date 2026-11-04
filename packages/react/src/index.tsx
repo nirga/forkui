@@ -10,9 +10,35 @@ export type CustomizeProps = {
   label?: string;
   /** Corner for the floating button. Default: the corner away from the reading start (left for RTL pages). */
   position?: 'bottom-right' | 'bottom-left';
-  /** The UI language of your app (e.g. i18n.language). Default: <html lang>. */
-  language?: string;
+  /**
+   * The UI language of your app, e.g. `() => i18n.language`. Default: <html lang>, unless it contradicts the
+   * page direction (a static lang="en" on an RTL page), in which case the vendor's editor.defaultLanguage is used.
+   */
+  language?: string | (() => string | undefined);
 };
+
+const RTL_LANGS = /^(he|ar|fa|ur|yi|iw)\b/i;
+const pageDir = (): 'rtl' | 'ltr' => ((document.dir || document.body.dir || document.documentElement.dir) === 'rtl' ? 'rtl' : 'ltr');
+function pageLanguage(language: CustomizeProps['language']): string {
+  const explicit = typeof language === 'function' ? language() : language;
+  if (explicit) return explicit;
+  const lang = document.documentElement.lang || '';
+  // A static lang that disagrees with the live direction isn't trustworthy.
+  return lang && RTL_LANGS.test(lang) === (pageDir() === 'rtl') ? lang : '';
+}
+
+/** Re-render when the page's direction changes (apps often set dir after their i18n loads). */
+function usePageDir() {
+  const [dir, setDir] = useState(pageDir);
+  useEffect(() => {
+    const update = () => setDir(pageDir());
+    const observer = new MutationObserver(update);
+    for (const el of [document.documentElement, document.body]) observer.observe(el, { attributes: true, attributeFilter: ['dir'] });
+    update();
+    return () => observer.disconnect();
+  }, []);
+  return dir;
+}
 
 const z = 2147483000;
 const OPEN_KEY = 'forkui:open';
@@ -83,8 +109,8 @@ export function Customize({ basePath = '/_forkui', label = 'Customize', position
     return () => window.removeEventListener('message', onMessage);
   }, [session, basePath]);
 
-  const rtl = (document.dir || document.body.dir) === 'rtl';
-  const side = (position ?? (rtl ? 'bottom-left' : 'bottom-right')) === 'bottom-left' ? { left: 20 } : { right: 20 };
+  const dir = usePageDir();
+  const side = (position ?? (dir === 'rtl' ? 'bottom-left' : 'bottom-right')) === 'bottom-left' ? { left: 20 } : { right: 20 };
   return (
     <>
       {status?.preview && (
@@ -112,7 +138,7 @@ export function Customize({ basePath = '/_forkui', label = 'Customize', position
         <div style={{ position: 'fixed', top: status?.preview ? 30 : 0, bottom: 0, ...side, width: 'min(440px, 100vw)', zIndex: z, boxShadow: '0 0 32px rgba(0,0,0,.3)', background: '#fff' }}>
           <iframe
             title="Customize"
-            src={`${session.editorUrl}#token=${encodeURIComponent(session.token)}&origin=${encodeURIComponent(window.location.origin)}${status?.preview ? '&preview=1' : ''}&lang=${encodeURIComponent(language ?? document.documentElement.lang ?? '')}&dir=${document.dir || document.body.dir || 'ltr'}`}
+            src={`${session.editorUrl}#token=${encodeURIComponent(session.token)}&origin=${encodeURIComponent(window.location.origin)}${status?.preview ? '&preview=1' : ''}&lang=${encodeURIComponent(pageLanguage(language))}&dir=${dir}`}
             style={{ border: 'none', width: '100%', height: '100%' }}
             sandbox="allow-scripts allow-same-origin allow-forms"
           />
