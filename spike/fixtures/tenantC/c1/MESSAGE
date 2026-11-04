@@ -1,0 +1,4 @@
+Per-rep summary cards
+
+Forkui-Intent: Above the deals table, show one card per sales rep (owner) with their total and number of deals, so managers can see who owns what.
+Forkui-Test: forkui-tests/c1-group-by-owner.spec.tsx

@@ -1,0 +1,8 @@
+{
+  "name": "@forkui/node",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Serve per-customer forkui builds from your own app. Express/Connect, Hono and any Fetch-API runtime.",
+  "exports": { ".": "./src/index.ts" }
+}

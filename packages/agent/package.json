@@ -1,0 +1,27 @@
+{
+  "name": "@forkui/agent",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@forkui/core": "workspace:*",
+    "@forkui/git": "workspace:*",
+    "@forkui/policy": "workspace:*",
+    "@forkui/sandbox": "workspace:*",
+    "ai": "7.0.145",
+    "picomatch": "4.0.2",
+    "zod": "3.25.76"
+  },
+  "peerDependencies": {
+    "@ai-sdk/anthropic": ">=4",
+    "@ai-sdk/openai": ">=4",
+    "@ai-sdk/google": ">=4"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/anthropic": { "optional": true },
+    "@ai-sdk/openai": { "optional": true },
+    "@ai-sdk/google": { "optional": true }
+  },
+  "devDependencies": { "@types/picomatch": "3.0.1" }
+}

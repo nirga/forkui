@@ -1,0 +1,4 @@
+Dark dashboard with hero pipeline card and win rate
+
+Forkui-Intent: Make the dashboard dark, make the open-pipeline card a wide purple hero card, and add a Win rate card (won / (won + lost)).
+Forkui-Test: forkui-tests/b1-dark-dashboard.spec.tsx

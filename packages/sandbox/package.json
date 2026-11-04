@@ -1,0 +1,8 @@
+{
+  "name": "@forkui/sandbox",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@forkui/core": "workspace:*" }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@forkui/engine",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@forkui/agent": "workspace:*",
+    "@forkui/core": "workspace:*",
+    "@forkui/git": "workspace:*",
+    "@forkui/policy": "workspace:*",
+    "@forkui/sandbox": "workspace:*",
+    "ai": "7.0.145"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@forkui/policy",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@forkui/core": "workspace:*",
+    "@forkui/git": "workspace:*",
+    "picomatch": "4.0.2"
+  },
+  "devDependencies": { "@types/picomatch": "3.0.1" }
+}

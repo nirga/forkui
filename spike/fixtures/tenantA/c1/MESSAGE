@@ -1,0 +1,4 @@
+Add Priority column to deals table
+
+Forkui-Intent: Show each deal's priority as a column in the deals table, right after Stage. Color high priority red, medium orange, low gray.
+Forkui-Test: forkui-tests/a1-priority-column.spec.tsx

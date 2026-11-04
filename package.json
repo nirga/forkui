@@ -1,0 +1,30 @@
+{
+  "name": "forkui-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc -b && tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "vitest run -c vitest.e2e.config.ts",
+    "forkui": "tsx packages/cli/src/bin.ts",
+    "demo": "pnpm --filter @forkui/demo-crm start --"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.1",
+    "typescript": "5.7.2",
+    "vitest": "2.1.4",
+    "@ai-sdk/anthropic": "4.0.83",
+    "@ai-sdk/openai": "4.0.97",
+    "@forkui/agent": "workspace:*",
+    "@forkui/engine": "workspace:*",
+    "@forkui/git": "workspace:*",
+    "@forkui/sandbox": "workspace:*",
+    "tsx": "4.23.15",
+    "forkui": "workspace:*"
+  }
+}

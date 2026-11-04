@@ -1,0 +1,13 @@
+node_modules
+dist
+*.tsbuildinfo
+.forkui-data
+spike/runs
+spike/results
+spike/repo
+spike/repo-c
+spike/template/node_modules
+
+# local secrets and demo state
+.env
+examples/crm-demo/.demo

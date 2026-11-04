@@ -1,0 +1,14 @@
+{
+  "name": "forkui",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Per-customer forks of your frontend that survive your releases.",
+  "bin": { "forkui": "./src/bin.ts" },
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "@forkui/core": "workspace:*",
+    "@forkui/server": "workspace:*",
+    "@forkui/sandbox": "workspace:*"
+  }
+}

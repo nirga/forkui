@@ -1,0 +1,25 @@
+{
+  "name": "@forkui/react",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "<Customize />: lets your customers' admins customize your app with forkui.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "react": "18.3.1"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
+}

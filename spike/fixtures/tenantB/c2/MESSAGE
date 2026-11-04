@@ -1,0 +1,4 @@
+Add Pipeline kanban tab
+
+Forkui-Intent: Add a Pipeline tab next to Overview that shows open and won deals as kanban columns by stage (lead, qualified, proposal, won), each with a count. Lost deals are hidden.
+Forkui-Test: forkui-tests/b2-pipeline-page.spec.tsx

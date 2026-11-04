@@ -1,0 +1,13 @@
+{
+  "name": "@forkui/demo-crm",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "tsx src/main.ts" },
+  "dependencies": {
+    "@forkui/agent": "workspace:*",
+    "@forkui/node": "workspace:*",
+    "@forkui/server": "workspace:*",
+    "express": "4.22.3"
+  },
+  "devDependencies": { "@types/express": "4.17.25", "tsx": "4.23.15" }
+}

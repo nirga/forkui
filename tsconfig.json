@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/git" },
+    { "path": "packages/policy" },
+    { "path": "packages/sandbox" },
+    { "path": "packages/agent" },
+    { "path": "packages/engine" },
+    { "path": "packages/node" },
+    { "path": "packages/server" },
+    { "path": "packages/cli" },
+    { "path": "packages/react" }
+  ]
+}

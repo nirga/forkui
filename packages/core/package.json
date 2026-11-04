@@ -1,0 +1,8 @@
+{
+  "name": "@forkui/core",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "zod": "3.25.76" }
+}

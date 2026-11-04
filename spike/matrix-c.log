@@ -1,0 +1,9 @@
+done c-rebase-sonnet-2 OUTCOME=pinned
+done c-rebase-sonnet-1 OUTCOME=pinned
+done c-replay-sonnet-1 OUTCOME=pinned
+done c-replay-sonnet-2 OUTCOME=pinned
+done c-rebase-opus-1 OUTCOME=pinned
+done c-rebase-opus-2 OUTCOME=pinned
+done c-replay-opus-2 OUTCOME=pinned
+done c-replay-opus-1 OUTCOME=pinned
+ALL_DONE

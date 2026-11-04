@@ -1,0 +1,14 @@
+body { font-family: system-ui, sans-serif; margin: 0; background: #f6f7f9; color: #1d2330; }
+.app { max-width: 960px; margin: 0 auto; padding: 24px; }
+.app-header h1 { margin: 0 0 16px; }
+.cards { display: flex; gap: 12px; margin-bottom: 24px; }
+.card { background: #fff; border: 1px solid #e3e6ec; border-radius: 8px; padding: 12px 16px; flex: 1; }
+.card-label { display: block; font-size: 12px; color: #667085; }
+.card-value { font-size: 22px; }
+.deals { width: 100%; border-collapse: collapse; background: #fff; }
+.deals th, .deals td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e6ec; }
+/* tenant B: dark dashboard */
+.cards-dark { background: #101828; padding: 16px; border-radius: 12px; }
+.cards-dark .card { background: #1d2939; border-color: #344054; color: #f2f4f7; }
+.cards-dark .card-label { color: #98a2b3; }
+.card-hero { flex: 2; background: #6941c6 !important; }
