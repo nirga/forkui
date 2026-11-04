@@ -68,6 +68,8 @@ export function editPrompt(o: {
   testKitHint: string;
   /** Set when revising an existing feature. */
   previous?: { request: string; spec: string };
+  /** Something the customer admin wrote, so the summary is in their language. */
+  adminSample?: string;
 }): string {
   const revision = o.previous
     ? `
@@ -92,6 +94,7 @@ Do two things:
 
 The test must fail without your change and pass with it. Run run_checks, then call finish.
 The finish summary is shown to the customer admin, who is not technical: one or two plain sentences about what they will see
-in the app. Never mention files, code, components, tests, checks or builds.
+in the app. Never mention files, code, components, tests, checks or builds.${o.adminSample ? `
+Write the finish or pin text in the same language the admin writes in. The admin wrote: "${o.adminSample.slice(0, 200)}"` : ''}
 Intent id: ${o.intentId}`;
 }

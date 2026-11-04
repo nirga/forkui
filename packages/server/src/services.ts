@@ -119,6 +119,7 @@ export class ForkuiServices {
       criteria?: string[];
       author?: { name: string; email: string };
       revise?: { previous: { request: string; spec: string } };
+      adminSample?: string;
     },
   ) {
     assertTenantId(tenantId);
@@ -147,6 +148,7 @@ export class ForkuiServices {
         spec,
         ...(req.author ? { author: req.author } : {}),
         ...(req.revise ? { revise: req.revise } : {}),
+        ...(req.adminSample ? { adminSample: req.adminSample } : {}),
       });
       if (report.outcome !== 'committed') return { report };
       const release = await buildRelease(engine, this.artifacts, { tenantId, sha: report.head! });
@@ -466,7 +468,9 @@ export class ForkuiServices {
       throw new ConflictError(`Publish or discard “${st.pending.title}” first. One unpublished feature at a time.`);
     if (st.pending?.intentId === id) await this.discardPending(tenantId); // the new version replaces the preview
     const previous = (await this.builtVersions(tenantId)).get(id);
+    const adminSample = [...r!.messages].reverse().find((m) => m.role === 'user')?.text;
     const job = this.requestEdit(tenantId, {
+      ...(adminSample ? { adminSample } : {}),
       intentId: id,
       title: msg.proposal.title,
       request: msg.proposal.request,

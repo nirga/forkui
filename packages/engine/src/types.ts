@@ -60,6 +60,8 @@ export type EditRequest = {
    * feature's spec and test to change (an approved amendment). `previous` is the version being revised.
    */
   revise?: { previous: { request: string; spec: string } };
+  /** Something the admin wrote, so the agent's summary comes back in their language. */
+  adminSample?: string;
 };
 
 export type EditOutcome = 'committed' | 'rejected' | 'pinned';

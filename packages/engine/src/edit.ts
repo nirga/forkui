@@ -56,6 +56,7 @@ export async function editTenant(d: EngineDeps, req: EditRequest): Promise<EditR
           testPath,
           testKitHint: config.testKit.guidance,
           ...(req.revise ? { previous: req.revise.previous } : {}),
+          ...(req.adminSample ? { adminSample: req.adminSample } : {}),
         }),
         tools,
         outcome,

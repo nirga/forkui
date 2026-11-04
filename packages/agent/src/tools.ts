@@ -24,7 +24,7 @@ export type ToolContext = {
   onEvent?: (e: ToolEvent) => void;
 };
 
-const MAX_READ = 200_000;
+const MAX_READ = 40_000;
 const MAX_LIST = 1000;
 const READ_ONLY_GIT = new Set(['status', 'diff', 'log', 'show', 'ls-files', 'blame', 'grep']);
 
@@ -78,13 +78,25 @@ export function createTools(ctx: ToolContext): { tools: ToolSet; outcome: () => 
     }),
 
     read_file: tool({
-      description: 'Read a UTF-8 text file (path relative to repo root).',
-      inputSchema: z.object({ path: z.string() }),
+      description:
+        'Read a UTF-8 text file (path relative to repo root). Large files: pass start_line/end_line, or use search to find what you need first.',
+      inputSchema: z.object({ path: z.string(), start_line: z.number().int().positive().optional(), end_line: z.number().int().positive().optional() }),
       execute: (input) =>
         guarded('read_file', input, async () => {
           const c = await sandbox.readFile(input.path);
           if (c === null) return `Not found: ${input.path}`;
-          return c.length > MAX_READ ? c.slice(0, MAX_READ) + `\n… truncated (${c.length} chars)` : c;
+          const lines = c.split('\n');
+          const from = input.start_line ?? 1;
+          const to = Math.min(input.end_line ?? lines.length, lines.length);
+          const slice = input.start_line || input.end_line ? lines.slice(from - 1, to).join('\n') : c;
+          if (slice.length <= MAX_READ) return input.start_line || input.end_line ? `[lines ${from}-${to} of ${lines.length}]\n${slice}` : slice;
+          // Cut at a line boundary and say how to get the rest.
+          let used = 0;
+          let n = 0;
+          const shown = slice.split('\n');
+          while (n < shown.length && used + shown[n]!.length + 1 <= MAX_READ) used += shown[n++]!.length + 1;
+          const last = from + n - 1;
+          return `${shown.slice(0, n).join('\n')}\n… [showing lines ${from}-${last} of ${lines.length}; ${c.length} chars total. Read more with start_line=${last + 1}, or use search.]`;
         }),
     }),
 

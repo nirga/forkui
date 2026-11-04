@@ -7,7 +7,7 @@ export type AgentRun = {
   text: string;
   steps: number;
   toolCalls: string[];
-  usage: { inputTokens: number; outputTokens: number };
+  usage: { inputTokens: number; outputTokens: number; cachedInputTokens: number };
   model: string;
   durationMs: number;
   finishReason: string;
@@ -37,6 +37,9 @@ export async function runAgent(o: RunAgentOptions): Promise<AgentRun> {
     prompt: o.prompt,
     tools: o.tools,
     stopWhen: [isStepCount(o.maxSteps), hasToolCall('finish'), hasToolCall('pin')],
+    // Agent loops resend the whole history every step. Ask providers that support it to cache the prefix
+    // (Anthropic: request-level cache_control; others ignore unknown provider keys, OpenAI caches automatically).
+    providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
     ...(o.abortSignal ? { abortSignal: o.abortSignal } : {}),
   });
   return {
@@ -44,7 +47,11 @@ export async function runAgent(o: RunAgentOptions): Promise<AgentRun> {
     text: r.text,
     steps: r.steps.length,
     toolCalls: r.steps.flatMap((s) => s.toolCalls.map((c) => c.toolName)),
-    usage: { inputTokens: r.totalUsage.inputTokens ?? 0, outputTokens: r.totalUsage.outputTokens ?? 0 },
+    usage: {
+      inputTokens: r.totalUsage.inputTokens ?? 0,
+      outputTokens: r.totalUsage.outputTokens ?? 0,
+      cachedInputTokens: r.totalUsage.inputTokenDetails?.cacheReadTokens ?? 0,
+    },
     model: modelName(o.model),
     durationMs: Date.now() - started,
     finishReason: String(r.finishReason),
