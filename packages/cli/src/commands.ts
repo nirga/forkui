@@ -163,8 +163,9 @@ export async function doctor(root: string, o: { checks: boolean; url?: string },
       if (/\binclude\s*:/.test(text) && !text.includes(config.paths.tenantTests))
         add('warn', `${f2} sets test.include without ${config.paths.tenantTests}/; tenant acceptance tests won't run`);
     }
-    const kit = join(root, 'forkui', 'testkit.ts');
-    if (!existsSync(kit)) add('warn', 'No test kit (forkui/testkit.ts): tenant tests will be fragile');
+    const kitName = ['testkit.ts', 'testkit.tsx', 'testkit.js', 'testkit.jsx'].find((f) => existsSync(join(root, 'forkui', f)));
+    const kit = join(root, 'forkui', kitName ?? 'testkit.ts');
+    if (!kitName) add('warn', 'No test kit (forkui/testkit.*): tenant tests will be fragile');
     else if (/const routes[^=]*=\s*\{\s*(\/\/[^\n]*\n\s*)*\};/.test(readFileSync(kit, 'utf8')))
       add('warn', 'forkui/testkit.ts has no routes yet: add the endpoints your screens call to mockApi(), or tenant tests will get 404s');
     else add('ok', 'test kit defines mock routes');

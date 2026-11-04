@@ -192,8 +192,15 @@ export function addMiddleware(src: string, kind: 'express' | 'connect' | 'hono',
     `${indent}  tenant: (${arg}) => ${user}?.orgId, ${MARK}\n` +
     `${indent}  canCustomize: (${arg}) => ${user}?.isAdmin === true, ${MARK}\n` +
     `${indent}})); ${MARK}`;
-  const at = m.index + line.length;
-  const withUse = `${src.slice(0, at)}\n${use}${src.slice(at)}`;
+  // Place it where the app starts serving the frontend: AFTER auth middleware (tenant() needs the session),
+  // BEFORE static files / the SPA catch-all. Fall back to right after app creation.
+  const esc = name.replace(/[$]/g, '\\$');
+  const serving = new RegExp(
+    `^[ \\t]*${esc}\\.(?:use\\(\\s*(?:express\\.static|serveStatic|sirv|serve(?:Static)?\\()|get\\(\\s*['"\`]\\*['"\`])[^\\n]*$`,
+    'm',
+  ).exec(src);
+  const at = serving ? serving.index : m.index + line.length + 1;
+  const withUse = serving ? `${src.slice(0, at)}${use}\n${src.slice(at)}` : `${src.slice(0, at - 1)}\n${use}${src.slice(at - 1)}`;
   const lines = withUse.split('\n');
   let lastImport = -1;
   lines.forEach((l, i) => {
@@ -239,7 +246,8 @@ export function init(root: string, o: InitOptions): InitResult {
   const config = buildConfig(d, o);
   parseConfig(JSON.stringify(config)); // never write an invalid config
   create(root, CONFIG_FILE, JSON.stringify(config, null, 2) + '\n', res, o.force);
-  create(root, TESTKIT, testkit(d), res);
+  if (!['testkit.ts', 'testkit.tsx', 'testkit.js', 'testkit.jsx'].some((f) => existsSync(join(root, 'forkui', f))))
+    create(root, TESTKIT, testkit(d), res);
   create(root, WORKFLOW, workflow(o.branch ?? 'main'), res);
 
   if (d.entry)

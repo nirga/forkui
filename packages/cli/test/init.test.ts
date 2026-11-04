@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseConfig } from '@forkui/core';
-import { addCustomize, addMiddleware, init, removeCustomize, uninstall } from '../src/index.ts';
+import { addCustomize, addMiddleware, init, removeCustomize, removeMarked, uninstall } from '../src/index.ts';
 import { tmp } from '../../../test/helpers.ts';
 
 const CRM = resolve(dirname(fileURLToPath(import.meta.url)), '../../../examples/crm/v1');
@@ -114,6 +114,31 @@ describe('codemods', () => {
     const out = addMiddleware("import { Hono } from 'hono';\nconst app = new Hono();\napp.get('/', (c) => c.text('hi'));\n", 'hono', true)!;
     expect(out).toContain("import { forkuiHono } from '@forkui/node'; // forkui");
     expect(out).toMatch(/app\.use\(forkuiHono\(\{[\s\S]*c\.var[\s\S]*\}\)\);/);
+  });
+
+  test('handles a root created and rendered in separate statements', () => {
+    const src = "import ReactDOM from 'react-dom/client';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);\n\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>,\n);\n";
+    const out = addCustomize(src)!;
+    expect(out).toContain('root.render(\n  <><React.StrictMode>');
+    expect(out).toContain('</React.StrictMode><Customize /></>,');
+    expect(removeCustomize(out)).toBe(src);
+  });
+
+  test('middleware goes after auth middleware and before static files', () => {
+    const src = "import express from 'express';\n\nconst app = express();\napp.use(session());\napp.use((req, _res, next) => { req.user = lookup(req); next(); });\n\napp.use('/api', api);\napp.use(express.static(BUILD, { index: false }));\napp.get('*', (req, res) => res.sendFile(INDEX));\n";
+    const out = addMiddleware(src, 'express', false)!;
+    const at = out.indexOf('app.use(forkui(');
+    expect(at).toBeGreaterThan(out.indexOf('req.user = lookup(req)'));
+    expect(at).toBeLessThan(out.indexOf('express.static'));
+    expect(removeMarked(out)).toBe(src);
+  });
+
+  test('without static serving it falls back to right after app creation', () => {
+    const src = "import express from 'express';\nconst app = express();\napp.listen(3000);\n";
+    const out = addMiddleware(src, 'express', false)!;
+    expect(out.indexOf('app.use(forkui(')).toBeGreaterThan(out.indexOf('const app = express()'));
+    expect(out.indexOf('app.use(forkui(')).toBeLessThan(out.indexOf('app.listen'));
+    expect(removeMarked(out)).toBe(src);
   });
 
   test('unrecognized entry returns null (manual step)', () => {

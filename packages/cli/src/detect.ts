@@ -64,7 +64,8 @@ export function detect(root: string): Detection {
   let server: Detection['server'] = null;
   for (const f of files) {
     const text = readFileSync(f, 'utf8');
-    if (!entry && /\.[jt]sx$/.test(f) && /createRoot\s*\([\s\S]*?\)\s*\.render\s*\(/.test(text)) entry = rel(f);
+    // Either `createRoot(el).render(<App />)` or `const root = createRoot(el); root.render(<App />)`.
+    if (!entry && /\.[jt]sx$/.test(f) && /\bcreateRoot\s*\(/.test(text) && /\.render\s*\(/.test(text)) entry = rel(f);
     if (!server && !/\.[jt]sx$/.test(f) && !rel(f).startsWith('src/')) {
       const hit = SERVER_PATTERNS.find(([re]) => re.test(text));
       if (hit) server = { file: rel(f), kind: hit[1] };
