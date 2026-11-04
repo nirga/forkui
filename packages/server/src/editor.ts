@@ -86,6 +86,8 @@ export const EDITOR_JS = `(() => {
   const token = params.get('token');
   const parentOrigin = params.get('origin');
   const previewing = params.get('preview') === '1';
+  const hostLang = (params.get('lang') || '').toLowerCase();
+  if (params.get('dir') === 'rtl') document.documentElement.dir = 'rtl';
   history.replaceState(null, '', location.pathname); // keep the token out of the URL
   const $ = (id) => document.getElementById(id);
   const post = (msg) => parentOrigin && parent.postMessage(msg, parentOrigin);
@@ -230,10 +232,22 @@ export const EDITOR_JS = `(() => {
     return el('div', { class: 'msg assistant' }, m.text);
   }
 
+  // Product-neutral examples, used only when the vendor configured none (editor.suggestions in forkui.config.json).
+  const DEFAULT_SUGGESTIONS = {
+    en: ['Add a column to a table', 'Change the wording of a label or button', "Hide a menu item my team doesn't use"],
+    he: ['להוסיף עמודה לטבלה', 'לשנות ניסוח של כותרת או כפתור', 'להסתיר פריט בתפריט שהצוות שלנו לא משתמש בו'],
+  };
+  function suggestions() {
+    const cfg = (list && list.editor) || {};
+    const lang = hostLang || cfg.defaultLanguage || 'en';
+    const pick = (map) => map[lang] || map[lang.split('-')[0]] || (cfg.defaultLanguage && map[cfg.defaultLanguage]) || null;
+    if (Array.isArray(cfg.suggestions)) return cfg.suggestions;
+    return (cfg.suggestions && pick(cfg.suggestions)) || pick(DEFAULT_SUGGESTIONS) || DEFAULT_SUGGESTIONS.en;
+  }
+
   function welcome() {
-    const ex = ['Add a Priority column to the deals table, high priority in red', 'Add a Win rate card to the dashboard', 'Add a Pipeline view with a column per stage'];
     return el('div', { class: 'msg assistant' }, 'What would you like to change? Describe it like you would to a colleague. I\\'ll propose it, build it, and you can preview it before anyone else sees it.',
-      el('div', { class: 'chips' }, ...ex.map((t) => el('button', { class: 'chip', onclick: () => { $('input').value = t; $('input').focus(); } }, t))));
+      el('div', { class: 'chips' }, ...suggestions().map((t) => el('button', { class: 'chip', onclick: () => { $('input').value = t; $('input').focus(); } }, t))));
   }
 
   function renderFeature() {

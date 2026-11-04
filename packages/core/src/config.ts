@@ -61,6 +61,18 @@ export const forkuiConfigSchema = z.object({
       allowHosts: z.array(z.string()).default([]),
     })
     .default({}),
+  /** What customer admins see in the editor. */
+  editor: z
+    .object({
+      /**
+       * Example requests shown when an admin starts a feature, written for YOUR product.
+       * Either a list, or per language: { "en": [...], "he": [...] }.
+       */
+      suggestions: z.union([z.array(z.string()), z.record(z.string(), z.array(z.string()))]).optional(),
+      /** Language to use when the host page doesn't declare one (e.g. "he"). */
+      defaultLanguage: z.string().optional(),
+    })
+    .default({}),
   agent: z
     .object({
       /**

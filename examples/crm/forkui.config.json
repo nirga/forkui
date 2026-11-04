@@ -1,20 +1,75 @@
 {
   "version": 1,
-  "install": { "run": ["npm", "ci", "--no-audit", "--no-fund"], "lockfile": "package-lock.json" },
+  "install": {
+    "run": [
+      "npm",
+      "ci",
+      "--no-audit",
+      "--no-fund"
+    ],
+    "lockfile": "package-lock.json"
+  },
   "checks": [
-    { "name": "typecheck", "run": ["npx", "tsc", "--noEmit"] },
-    { "name": "test", "run": ["npx", "vitest", "run"] },
-    { "name": "build", "run": ["npx", "vite", "build", "--logLevel", "error"] }
+    {
+      "name": "typecheck",
+      "run": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ]
+    },
+    {
+      "name": "test",
+      "run": [
+        "npx",
+        "vitest",
+        "run"
+      ]
+    },
+    {
+      "name": "build",
+      "run": [
+        "npx",
+        "vite",
+        "build",
+        "--logLevel",
+        "error"
+      ]
+    }
   ],
   "paths": {
-    "locked": ["src/main.tsx", "index.html", "vite.config.ts", "tsconfig.json"],
-    "vendorOwned": ["src/__tests__/**", "src/test/**"],
+    "locked": [
+      "src/main.tsx",
+      "index.html",
+      "vite.config.ts",
+      "tsconfig.json"
+    ],
+    "vendorOwned": [
+      "src/__tests__/**",
+      "src/test/**"
+    ],
     "tenantTests": "forkui-tests"
   },
   "testKit": {
     "extension": ".spec.tsx",
-    "run": ["npx", "vitest", "run", "{file}"],
+    "run": [
+      "npx",
+      "vitest",
+      "run",
+      "{file}"
+    ],
     "guidance": "Tests live in forkui-tests/ and use vitest + @testing-library/react. Render <App /> from '../src/App' after calling mockApi() from '../src/test/mockApi' (vendor test kit; it serves the fixture deals). Use screen/within/fireEvent and accessible roles/labels. Always add afterEach(() => { cleanup(); vi.unstubAllGlobals(); })."
   },
-  "agent": { "model": "anthropic:claude-sonnet-5-5", "escalateTo": "anthropic:claude-opus-5-5", "maxSteps": 60 }
+  "agent": {
+    "model": "anthropic:claude-sonnet-5-5",
+    "escalateTo": "anthropic:claude-opus-5-5",
+    "maxSteps": 60
+  },
+  "editor": {
+    "suggestions": [
+      "Add a Priority column to the deals table, high priority in red",
+      "Add a Win rate card to the dashboard",
+      "Add a Pipeline view with a column per stage"
+    ]
+  }
 }

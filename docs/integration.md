@@ -7,7 +7,11 @@ There are three touchpoints, and `forkui init` writes all of them.
 import { Customize } from '@forkui/react';
 createRoot(root).render(<><App /><Customize /></>);
 ```
-Props: `basePath` (default `/_forkui`), `label` (default `"Customize"`) and `position` (`bottom-right` or `bottom-left`).
+Props:
+- `basePath` (default `/_forkui`)
+- `label` (default `"Customize"`)
+- `position` (`bottom-right` or `bottom-left`; by default, the left corner on right-to-left pages)
+- `language`: your app's UI language, e.g. `i18n.language`. It defaults to `<html lang>` and picks the editor's suggestions. The editor also follows the page's direction (RTL).
 
 What it does:
 - Calls `GET /_forkui/token`. If the middleware says the user may customize, it shows a floating button.

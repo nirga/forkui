@@ -41,6 +41,8 @@ The config lives in your repo, but forkui always reads it from the **base releas
 | `testKit.guidance` | `""` | Told to the agent whenever it writes a test. Name your helpers here. |
 | `dependencies.allow` | `[]` | Packages a customer change may add. Globs are allowed. Nothing else in `package.json` may change. |
 | `network.allowHosts` | `[]` | Absolute URLs customer code may reference, beyond your own origin. They're also added to the CSP `connect-src`. |
+| `editor.suggestions` | product-neutral examples | Example requests shown when an admin starts a feature. Write them for *your* product. Either a list, or per language: `{ "en": [...], "he": [...] }`. |
+| `editor.defaultLanguage` | `en` | Language used when the host page doesn't declare one (`<html lang>` or `<Customize language>`). |
 | `agent.model` | **required** | `"<provider>:<model id>"`. The provider package is loaded dynamically, e.g. `anthropic` → `@ai-sdk/anthropic`, `openai` → `@ai-sdk/openai`, `google`, `amazon-bedrock`, `azure`, `mistral`, `xai`, `groq`, `deepseek`, `ollama`. Credentials come from each provider's usual env var. |
 | `agent.escalateTo` | `null` | A second model, tried once if the first attempt fails verification. |
 | `agent.maxSteps` | `60` | Tool-call budget per attempt. |

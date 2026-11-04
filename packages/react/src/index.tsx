@@ -8,8 +8,10 @@ export type CustomizeProps = {
   basePath?: string;
   /** Button label. */
   label?: string;
-  /** Corner for the floating button. */
+  /** Corner for the floating button. Default: the corner away from the reading start (left for RTL pages). */
   position?: 'bottom-right' | 'bottom-left';
+  /** The UI language of your app (e.g. i18n.language). Default: <html lang>. */
+  language?: string;
 };
 
 const z = 2147483000;
@@ -32,7 +34,7 @@ const btn: CSSProperties = {
  * Render once in your app root. Shows nothing unless the forkui middleware says the current
  * user may customize (your `canCustomize`), or they're previewing an unpublished change.
  */
-export function Customize({ basePath = '/_forkui', label = 'Customize', position = 'bottom-right' }: CustomizeProps) {
+export function Customize({ basePath = '/_forkui', label = 'Customize', position, language }: CustomizeProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   // Stay open across the reloads that preview / publish cause.
@@ -81,7 +83,8 @@ export function Customize({ basePath = '/_forkui', label = 'Customize', position
     return () => window.removeEventListener('message', onMessage);
   }, [session, basePath]);
 
-  const side = position === 'bottom-left' ? { left: 20 } : { right: 20 };
+  const rtl = (document.dir || document.body.dir) === 'rtl';
+  const side = (position ?? (rtl ? 'bottom-left' : 'bottom-right')) === 'bottom-left' ? { left: 20 } : { right: 20 };
   return (
     <>
       {status?.preview && (
@@ -109,7 +112,7 @@ export function Customize({ basePath = '/_forkui', label = 'Customize', position
         <div style={{ position: 'fixed', top: status?.preview ? 30 : 0, bottom: 0, ...side, width: 'min(440px, 100vw)', zIndex: z, boxShadow: '0 0 32px rgba(0,0,0,.3)', background: '#fff' }}>
           <iframe
             title="Customize"
-            src={`${session.editorUrl}#token=${encodeURIComponent(session.token)}&origin=${encodeURIComponent(window.location.origin)}${status?.preview ? '&preview=1' : ''}`}
+            src={`${session.editorUrl}#token=${encodeURIComponent(session.token)}&origin=${encodeURIComponent(window.location.origin)}${status?.preview ? '&preview=1' : ''}&lang=${encodeURIComponent(language ?? document.documentElement.lang ?? '')}&dir=${document.dir || document.body.dir || 'ltr'}`}
             style={{ border: 'none', width: '100%', height: '100%' }}
             sandbox="allow-scripts allow-same-origin allow-forms"
           />

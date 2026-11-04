@@ -116,6 +116,8 @@ describe('forkui server', () => {
     const js = await (await app.request('/editor.js')).text();
     expect(() => new Function(js)).not.toThrow();
     expect(js).not.toMatch(/innerHTML/);
+    // No product-specific examples baked into the editor (they come from editor.suggestions in the config).
+    expect(js).not.toMatch(/Priority column|Win rate|Pipeline view/);
   });
 
   test('edit -> preview -> publish -> served by @forkui/node; v2 bundle upload -> rollout carries it over', async () => {

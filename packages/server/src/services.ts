@@ -285,6 +285,14 @@ export class ForkuiServices {
   // A feature = one named customization. Its conversation lives in FeatureStore; everything built lives in git:
   // its versions are the branch commits with Forkui-Intent-Id = feature id (a revision adds a commit on top).
 
+  /** The base release whose config applies to this tenant (its own base, or the latest for new tenants). */
+  private async configVersion(tenantId: string): Promise<string> {
+    const exists = await this.store.resolve(`refs/heads/tenants/${tenantId}`);
+    const base = exists ? await this.store.tenantBase(tenantId) : await this.store.latestBase();
+    if (!base) throw new Error('No base release yet.');
+    return base.version;
+  }
+
   private async modelSpec(tenantId: string): Promise<string> {
     const exists = await this.store.resolve(`refs/heads/tenants/${tenantId}`);
     const base = exists ? await this.store.tenantBase(tenantId) : await this.store.latestBase();
@@ -363,7 +371,8 @@ export class ForkuiServices {
     }
     out.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
     const ready = !!(await this.store.latestBase());
-    return { features: out, pending: st.pending ?? null, live: !!st.current, pinned: st.pinned, ready };
+    const editor = ready ? (await this.store.readConfig(await this.configVersion(tenantId))).editor : {};
+    return { features: out, pending: st.pending ?? null, live: !!st.current, pinned: st.pinned, ready, editor };
   }
 
   async getFeature(tenantId: string, id: string) {
