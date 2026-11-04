@@ -499,7 +499,8 @@ export class ForkuiServices {
         return this.say(tenantId, id, {
           kind: 'result',
           outcome: 'committed',
-          text: `${summary?.kind === 'finished' ? summary.summary : 'Done.'} It's ready to preview. Only you can see it until you publish.`,
+          // The agent's own summary, already in the admin's language; the editor shows Preview / Publish next to it.
+          text: summary?.kind === 'finished' ? summary.summary : 'Done.',
           jobId: job.id,
           ...(res.releaseId ? { releaseId: res.releaseId } : {}),
         });
