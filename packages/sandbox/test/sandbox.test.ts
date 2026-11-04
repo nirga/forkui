@@ -56,6 +56,34 @@ describe('runChecks', () => {
 });
 
 describe('DependencyCache', () => {
+  test('installs inside the worktree, so relative paths in the manifest resolve', async () => {
+    const root = dir();
+    const { mkdirSync } = await import('node:fs');
+    const w = join(root, 'wt');
+    mkdirSync(join(w, 'vendor-pkgs'), { recursive: true });
+    writeFileSync(join(w, 'vendor-pkgs', 'thing.txt'), 'local dep');
+    writeFileSync(join(w, 'package.json'), '{"name":"x"}');
+    writeFileSync(join(w, '.npmrc'), 'registry=https://registry.example.test/');
+    const config = parseConfig(
+      JSON.stringify({
+        version: 1,
+        checks: [{ name: 'x', run: ['true'] }],
+        agent: { model: 'mock:primary' },
+        // Fails unless run in the worktree: reads a repo-relative file and the repo's .npmrc.
+        install: {
+          run: ['node', '-e', 'const fs=require("fs");fs.readFileSync("vendor-pkgs/thing.txt");fs.readFileSync(".npmrc");fs.mkdirSync("node_modules/ok",{recursive:true})'],
+          lockfile: 'package-lock.json',
+        },
+      }),
+    );
+    const driver = new LocalDriver();
+    const cache = new DependencyCache(join(root, 'cache'), driver);
+    const r = await cache.link(await driver.open(w), config);
+    expect(r.installed).toBe(true);
+    expect(existsSync(join(w, 'node_modules', 'ok'))).toBe(true);
+    expect(readlinkSync(join(w, 'node_modules'))).toContain(r.key); // moved into the cache, linked back
+  });
+
   test('installs once per manifest and links into worktrees', async () => {
     const root = dir();
     const config = parseConfig(
@@ -108,7 +136,7 @@ describe('DependencyCache', () => {
     }
     const results = await Promise.all(boxes.map((b) => cache.link(b, config)));
     expect(results.filter((r) => r.installed)).toHaveLength(1);
-    expect(read(join(root, 'cache', 'installs.log'), 'utf8')).toBe('x');
+    expect(read(join(root, 'installs.log'), 'utf8')).toBe('x');
     for (const b of boxes) expect(existsSync(join(b.root, 'node_modules', 'fake'))).toBe(true);
   });
 });

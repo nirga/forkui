@@ -1,9 +1,12 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { cp, lstat, mkdir, readFile, rename, rm, symlink } from 'node:fs/promises';
+import { lstat, mkdir, readFile, rename, rm, symlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { ForkuiConfig } from '@forkui/core';
 import type { Sandbox, SandboxDriver } from './types.ts';
+
+/** Files besides the manifest and lockfile that change what an install produces. */
+const INSTALL_CONFIG_FILES = ['.npmrc', '.yarnrc', '.yarnrc.yml', '.pnpmfile.cjs'];
 
 /**
  * Caches installed node_modules keyed by (package.json deps + lockfile) hash, and links them
@@ -17,7 +20,7 @@ export class DependencyCache {
 
   async key(worktreeRoot: string, config: ForkuiConfig): Promise<string> {
     const h = createHash('sha256');
-    for (const f of ['package.json', config.install.lockfile]) {
+    for (const f of ['package.json', config.install.lockfile, ...INSTALL_CONFIG_FILES]) {
       const p = join(worktreeRoot, f);
       h.update(f + '\0' + (existsSync(p) ? await readFile(p) : '') + '\0');
     }
@@ -48,22 +51,26 @@ export class DependencyCache {
     return { key, installed };
   }
 
+  /**
+   * Install IN the worktree (so relative `file:` deps, .npmrc/.yarnrc, patches/ etc. resolve exactly as in the
+   * vendor's repo; lockfiles like yarn v1's encode paths relative to the project), then move node_modules into
+   * the cache.
+   */
   private async install(root: string, entry: string, config: ForkuiConfig): Promise<boolean> {
     if (existsSync(join(entry, 'node_modules'))) return false;
-    // Unique staging dir (other processes may install the same key concurrently).
-    const staging = `${entry}.tmp-${process.pid}-${randomBytes(6).toString('hex')}`;
-    await mkdir(staging, { recursive: true });
-    for (const f of ['package.json', config.install.lockfile]) {
-      const p = join(root, f);
-      if (existsSync(p)) await cp(p, join(staging, f));
-    }
-    const box = await this.driver.open(staging);
+    const target = join(root, 'node_modules');
+    await rm(target, { recursive: true, force: true });
+    const box = await this.driver.open(root);
     const r = await box.exec(config.install.run, { timeoutMs: 15 * 60_000 });
     await box.dispose();
     if (r.code !== 0) {
-      await rm(staging, { recursive: true, force: true });
+      await rm(target, { recursive: true, force: true });
       throw new Error(`Dependency install failed (${r.code}):\n${(r.stderr || r.stdout).slice(-4000)}`);
     }
+    // Unique staging dir (other processes may install the same key concurrently).
+    const staging = `${entry}.tmp-${process.pid}-${randomBytes(6).toString('hex')}`;
+    await mkdir(staging, { recursive: true });
+    await rename(target, join(staging, 'node_modules'));
     try {
       await rename(staging, entry);
       return true;
@@ -74,4 +81,5 @@ export class DependencyCache {
       return false;
     }
   }
+
 }
