@@ -172,6 +172,20 @@ describe('features', () => {
     expect(after.feature).toMatchObject({ status: 'preview', liveToo: true });
   });
 
+  test('a failed build reopens its proposal for a one-click retry', async () => {
+    const { queue, build, settle, create } = await setup();
+    queue.push(propose('Priority column', ['Priority after Stage']));
+    const { id } = await create('priority');
+    // No editor model queued -> the build job fails.
+    expect((await build(id)).status).toBe(202);
+    const d = await settle(id);
+    expect(d.messages.at(-1)).toMatchObject({ kind: 'result', outcome: 'failed' });
+    expect(d.messages.find((m) => m.kind === 'proposal')!.status).toBe('proposed');
+    queue.push(edit(['Name', 'Stage', 'Priority', 'Amount'], 'forkui-tests/f1.spec.mjs', priorityTestStable));
+    expect((await build(id)).status).toBe(202);
+    expect((await settle(id)).feature.status).toBe('preview');
+  });
+
   test('planner replies and model errors show up in the feature chat', async () => {
     const { queue, say, create } = await setup();
     queue.push(scriptedModel('planner', [{ tool: 'reply', input: { text: 'Which table do you mean?' } }]));

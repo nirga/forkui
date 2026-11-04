@@ -481,11 +481,13 @@ export class ForkuiServices {
       rec.messages.push({ id: msgId(), at: now(), role: 'assistant', kind: 'build', text: `Working on “${msg.proposal!.title}”…`, jobId: job.id });
     });
     void this.jobs.wait(job.id).then(async (done) => {
+      const res = done.result as EditResult | undefined;
+      const built = done.status === 'done' && res?.report.outcome === 'committed';
+      // A failed or rejected build reopens its proposal, so the admin can retry with one click.
       await this.features.update(tenantId, id, (rec) => {
         const m = rec.messages.find((x) => x.id === messageId);
-        if (m) m.status = 'done';
+        if (m) m.status = built ? 'done' : 'proposed';
       });
-      const res = done.result as EditResult | undefined;
       if (done.status === 'failed' || !res)
         return this.say(tenantId, id, { kind: 'result', outcome: 'failed', text: `Something went wrong: ${done.error ?? 'unknown error'}`, jobId: job.id });
       const summary = res.report.attempts.map((a) => a.agent?.outcome).find((o) => o?.kind === 'finished');
