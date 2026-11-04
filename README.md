@@ -106,4 +106,4 @@ pnpm demo            # the browser demo (needs a key in .env)
 ```
 
 ## License
-Apache-2.0
+[Apache-2.0](LICENSE)
